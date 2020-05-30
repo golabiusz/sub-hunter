@@ -20,8 +20,6 @@ public class SubHunter extends Activity
 {
     float horizontalTouched = -100;
     float verticalTouched = -100;
-    int subHorizontalPosition;
-    int subVerticalPosition;
     boolean hit = false;
     int shotsTaken;
     int distanceFromSub;
@@ -33,6 +31,7 @@ public class SubHunter extends Activity
     Paint paint;
     Grid grid;
     Point size;
+    Submarine sub;
 
     /*
         Android runs this code just before
@@ -77,8 +76,7 @@ public class SubHunter extends Activity
     private void newGame()
     {
         Random random = new Random();
-        subHorizontalPosition = random.nextInt(grid.getWidth());
-        subVerticalPosition = random.nextInt(grid.getHeight());
+        sub = new Submarine(random.nextInt(grid.getWidth()), random.nextInt(grid.getHeight()));
         shotsTaken = 0;
 
         Log.d("Debugging", "In newGame");
@@ -102,24 +100,12 @@ public class SubHunter extends Activity
 
         // Draw the vertical lines of the grid
         for (int i = 1; i <= grid.getWidth(); i++) {
-            canvas.drawLine(
-                    grid.getBlockSize() * i,
-                    0,
-                    grid.getBlockSize() * i,
-                    size.y,
-                    paint
-            );
+            canvas.drawLine(grid.getBlockSize() * i, 0, grid.getBlockSize() * i, size.y, paint);
         }
 
         // Draw the horizontal lines of the grid
         for (int i = 1; i <= grid.getHeight(); i++) {
-            canvas.drawLine(
-                    0,
-                    grid.getBlockSize() * i,
-                    size.x,
-                    grid.getBlockSize() * i,
-                    paint
-            );
+            canvas.drawLine(0, grid.getBlockSize() * i, size.x, grid.getBlockSize() * i, paint);
         }
 
         // Draw the player's shot
@@ -179,7 +165,7 @@ public class SubHunter extends Activity
         Log.d("Debugging", "In takeShot");
 
         // Add one to the shotsTaken variable
-        shotsTaken++;
+        ++shotsTaken;
 
         // Convert the float screen coordinates
         // into int grid coordinates
@@ -187,11 +173,11 @@ public class SubHunter extends Activity
         verticalTouched = (int) touchY / grid.getBlockSize();
 
         // Did the shot hit the sub?
-        hit = horizontalTouched == subHorizontalPosition && verticalTouched == subVerticalPosition;
+        hit = horizontalTouched == sub.getHorizontalPosition() && verticalTouched == sub.getVerticalPosition();
 
         // How far away horizontally and vertically was the shot from the sub
-        int horizontalGap = (int) horizontalTouched - subHorizontalPosition;
-        int verticalGap = (int) verticalTouched - subVerticalPosition;
+        int horizontalGap = (int) horizontalTouched - sub.getHorizontalPosition();
+        int verticalGap = (int) verticalTouched - sub.getVerticalPosition();
 
         // Use Pythagoras's theorem to get the distance travelled in a straight line
         distanceFromSub = (int) Math.sqrt(
@@ -236,13 +222,13 @@ public class SubHunter extends Activity
 
         debugData.put("numberHorizontalPixels", size.x);
         debugData.put("numberVerticalPixels", size.y);
-        debugData.put("grid.getBlockSize()", grid.getBlockSize());
+        debugData.put("blockSize", grid.getBlockSize());
         debugData.put("gridWidth", grid.getWidth());
         debugData.put("gridHeight", grid.getHeight());
         debugData.put("horizontalTouched", horizontalTouched);
         debugData.put("verticalTouched", verticalTouched);
-        debugData.put("subHorizontalPosition", subHorizontalPosition);
-        debugData.put("subVerticalPosition", subVerticalPosition);
+        debugData.put("subHorizontalPosition", sub.getHorizontalPosition());
+        debugData.put("subVerticalPosition", sub.getVerticalPosition());
         debugData.put("hit", hit);
         debugData.put("shotsTaken", shotsTaken);
         debugData.put("debugging", debugging);

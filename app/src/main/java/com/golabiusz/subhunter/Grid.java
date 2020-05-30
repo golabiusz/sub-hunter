@@ -1,6 +1,6 @@
 package com.golabiusz.subhunter;
 
-public class Grid
+public final class Grid
 {
     private int blockSize;
     private int width;
@@ -13,15 +13,18 @@ public class Grid
         this.blockSize = blockSize;
     }
 
-    public int getBlockSize() {
+    public int getBlockSize()
+    {
         return blockSize;
     }
 
-    public int getWidth() {
+    public int getWidth()
+    {
         return width;
     }
 
-    public int getHeight() {
+    public int getHeight()
+    {
         return height;
     }
 }
