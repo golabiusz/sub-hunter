@@ -1,22 +1,21 @@
 package com.golabiusz.subhunter;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
-import android.os.Bundle;
 import android.util.Log;
-import android.view.Display;
 import android.view.MotionEvent;
 import android.widget.ImageView;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
 
-public class SubHunter extends Activity
+public class SubHunterGame
 {
     float horizontalTouched = -100;
     float verticalTouched = -100;
@@ -33,30 +32,15 @@ public class SubHunter extends Activity
     Point size;
     Submarine sub;
 
-    /*
-        Android runs this code just before
-        the player sees the app.
-        This makes it a good place to add
-        the code for the one-time setup phase.
-     */
-    @Override
-    protected void onCreate(Bundle savedInstanceState)
+    public SubHunterGame(@NotNull Point size, ImageView gameView)
     {
-        super.onCreate(savedInstanceState);
-
-        // Get the current device's screen resolution
-        Display display = getWindowManager().getDefaultDisplay();
-        size = new Point();
-        display.getSize(size);
+        this.size = size;
+        this.gameView = gameView;
 
         // Initialize all the objects ready for drawing
         blankBitmap = Bitmap.createBitmap(size.x, size.y, Bitmap.Config.ARGB_8888);
         canvas = new Canvas(blankBitmap);
-        gameView = new ImageView(this);
         paint = new Paint();
-
-        // Tell Android to set our drawing as the view for this app
-        setContentView(gameView);
 
         // Initialize our grid based on the screen resolution
         GridFactory gridFactory = new GridFactory();
@@ -134,13 +118,7 @@ public class SubHunter extends Activity
         }
     }
 
-    /*
-        This part of the code will
-        handle detecting that the player
-        has tapped the screen
-     */
-    @Override
-    public boolean onTouchEvent(MotionEvent motionEvent)
+    public boolean onTouchEvent(@NotNull MotionEvent motionEvent)
     {
         Log.d("Debugging", "In onTouchEvent");
 
