@@ -1,16 +1,21 @@
 package com.golabiusz.subhunter;
 
+import android.content.Context;
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.media.SoundPool;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.ImageView;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
@@ -32,6 +37,10 @@ public class SubHunterGame
     Point size;
     Submarine sub;
 
+    private SoundPool sp;
+    private int hitSoundID = -1;
+    private int missSoundID = -1;
+
     public SubHunterGame(@NotNull Point size, ImageView gameView)
     {
         this.size = size;
@@ -46,9 +55,30 @@ public class SubHunterGame
         GridFactory gridFactory = new GridFactory();
         grid = gridFactory.createGrid(size);
 
+        this.loadSounds(gameView.getContext());
+
         Log.d("Debugging", "In onCreate");
         newGame();
         draw();
+    }
+
+    private void loadSounds(Context context)
+    {
+        sp = new SoundPoolBuilder().build();
+
+        // Open each of the sound files in turn and load them into RAM ready to play
+        try {
+            AssetManager assetManager = context.getAssets();
+            AssetFileDescriptor descriptor;
+
+            descriptor = assetManager.openFd("hit.ogg");
+            hitSoundID = sp.load(descriptor, 0);
+
+            descriptor = assetManager.openFd("miss.ogg");
+            missSoundID = sp.load(descriptor, 0);
+        } catch (IOException e) {
+            Log.d("error", "failed to load sound files");
+        }
     }
 
     /*
@@ -165,8 +195,10 @@ public class SubHunterGame
         if (hit) {
             // If there is a hit call boom
             boom();
+            sp.play(hitSoundID, 1, 1, 0, 0, 1);
         } else {
             // Otherwise call draw as usual
+            sp.play(missSoundID, 1, 1, 0, 0, 1);
             draw();
         }
     }
