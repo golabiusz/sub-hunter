@@ -1,20 +1,18 @@
 package com.golabiusz.subhunter;
 
-import android.graphics.Point;
-
 public class GridFactory
 {
     private static final int DEFAULT_GRID_WIDTH = 40;
 
-    public Grid createGrid(Point size)
+    public Grid createGrid(int screenWidth, int screenHeight)
     {
-        return createGrid(size, DEFAULT_GRID_WIDTH);
+        return createGrid(screenWidth, screenHeight, DEFAULT_GRID_WIDTH);
     }
 
-    public Grid createGrid(Point size, int gridWidth)
+    public Grid createGrid(int screenWidth, int screenHeight, int gridWidth)
     {
-        int blockSize = size.x / gridWidth;
-        int gridHeight = size.y / blockSize;
+        int blockSize = screenWidth / gridWidth;
+        int gridHeight = screenHeight / blockSize;
 
         return new Grid(gridWidth, gridHeight, blockSize);
     }
