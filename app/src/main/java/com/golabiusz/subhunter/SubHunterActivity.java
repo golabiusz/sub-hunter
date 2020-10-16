@@ -4,12 +4,9 @@ import android.app.Activity;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.view.Display;
-import android.view.MotionEvent;
-import android.widget.ImageView;
 
 public class SubHunterActivity extends Activity
 {
-    private ImageView gameView;
     private SubHunterGame game;
 
     /*
@@ -28,21 +25,7 @@ public class SubHunterActivity extends Activity
         Point size = new Point();
         display.getSize(size);
 
-        // Tell Android to set our drawing as the view for this app
-        gameView = new ImageView(this);
-        setContentView(gameView);
-
-        game = new SubHunterGame(size, gameView);
-    }
-
-    /*
-        This part of the code will
-        handle detecting that the player
-        has tapped the screen
-     */
-    @Override
-    public boolean onTouchEvent(MotionEvent motionEvent)
-    {
-        return game.onTouchEvent(motionEvent);
+        game = new SubHunterGame(this, size.x, size.y);
+        setContentView(game);
     }
 }

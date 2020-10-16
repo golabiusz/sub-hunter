@@ -7,11 +7,11 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Point;
 import android.media.SoundPool;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.widget.ImageView;
+
+import androidx.appcompat.widget.AppCompatImageView;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -20,46 +20,70 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
 
-public class SubHunterGame
+public class SubHunterGame extends AppCompatImageView
 {
-    float horizontalTouched = -100;
-    float verticalTouched = -100;
-    boolean hit = false;
-    int shotsTaken;
-    int distanceFromSub;
-    boolean debugging = false;
+    private final boolean DEBUGGING = false;
 
-    ImageView gameView;
-    Bitmap blankBitmap;
-    Canvas canvas;
-    Paint paint;
-    Grid grid;
-    Point size;
-    Submarine sub;
+    private float horizontalTouched = -100;
+    private float verticalTouched = -100;
+    private boolean hit = false;
+    private int shotsTaken;
+    private int distanceFromSub;
+
+    private Bitmap blankBitmap;
+    private Canvas canvas;
+    private Paint paint;
+
+    private int screenWidth;
+    private int screenHeight;
 
     private SoundPool sp;
     private int hitSoundID = -1;
     private int missSoundID = -1;
 
-    public SubHunterGame(@NotNull Point size, ImageView gameView)
+    private Grid grid;
+    private Submarine sub;
+
+    public SubHunterGame(Context context, int screenWidth, int screenHeight)
     {
-        this.size = size;
-        this.gameView = gameView;
+        super(context);
+
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
 
         // Initialize all the objects ready for drawing
-        blankBitmap = Bitmap.createBitmap(size.x, size.y, Bitmap.Config.ARGB_8888);
+        blankBitmap = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
         canvas = new Canvas(blankBitmap);
         paint = new Paint();
 
         // Initialize our grid based on the screen resolution
         GridFactory gridFactory = new GridFactory();
-        grid = gridFactory.createGrid(size);
+        grid = gridFactory.createGrid(screenWidth, screenHeight);
 
-        this.loadSounds(gameView.getContext());
+        this.loadSounds(context);
 
         Log.d("Debugging", "In onCreate");
         newGame();
         draw();
+    }
+
+    /*
+        This part of the code will
+        handle detecting that the player
+        has tapped the screen
+    */
+    public boolean onTouchEvent(@NotNull MotionEvent motionEvent)
+    {
+        Log.d("Debugging", "In onTouchEvent");
+
+        // Has the player removed their finger from the screen?
+        if ((motionEvent.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_UP) {
+            // Process the player's shot by passing the
+            // coordinates of the player's finger to takeShot
+            takeShot(motionEvent.getX(), motionEvent.getY());
+        }
+
+        return true;
     }
 
     private void loadSounds(Context context)
@@ -104,7 +128,7 @@ public class SubHunterGame
     */
     private void draw()
     {
-        gameView.setImageBitmap(blankBitmap);
+        setImageBitmap(blankBitmap);
 
         // Wipe the screen with a white color
         canvas.drawColor(Color.argb(255, 255, 255, 200));
@@ -112,16 +136,31 @@ public class SubHunterGame
         // Change the paint color to black
         paint.setColor(Color.argb(255, 50, 50, 150));
 
+        drawGrid();
+        drawShot();
+        drawHUD();
+
+        Log.d("Debugging", "In draw");
+        if (DEBUGGING) {
+            printDebuggingText();
+        }
+    }
+
+    private void drawGrid()
+    {
         // Draw the vertical lines of the grid
         for (int i = 1; i <= grid.getWidth(); i++) {
-            canvas.drawLine(grid.getBlockSize() * i, 0, grid.getBlockSize() * i, size.y, paint);
+            canvas.drawLine(grid.getBlockSize() * i, 0, grid.getBlockSize() * i, screenHeight, paint);
         }
 
         // Draw the horizontal lines of the grid
         for (int i = 1; i <= grid.getHeight(); i++) {
-            canvas.drawLine(0, grid.getBlockSize() * i, size.x, grid.getBlockSize() * i, paint);
+            canvas.drawLine(0, grid.getBlockSize() * i, screenWidth, grid.getBlockSize() * i, paint);
         }
+    }
 
+    private void drawShot()
+    {
         // Draw the player's shot
         canvas.drawRect(
             horizontalTouched * grid.getBlockSize(),
@@ -130,36 +169,20 @@ public class SubHunterGame
             (verticalTouched * grid.getBlockSize()) + grid.getBlockSize(),
             paint
         );
+    }
 
+    private void drawHUD()
+    {
         // Re-size the text appropriate for the
         // score and distance text
         paint.setTextSize(grid.getBlockSize() * 2);
         paint.setColor(Color.argb(255, 0, 0, 255));
         canvas.drawText(
-                "Shots Taken: " + shotsTaken + "  Distance: " + distanceFromSub,
-                grid.getBlockSize(),
-                grid.getBlockSize() * 1.75f,
-                paint
+            "Shots Taken: " + shotsTaken + "  Distance: " + distanceFromSub,
+            grid.getBlockSize(),
+            grid.getBlockSize() * 1.75f,
+            paint
         );
-
-        Log.d("Debugging", "In draw");
-        if (debugging) {
-            printDebuggingText();
-        }
-    }
-
-    public boolean onTouchEvent(@NotNull MotionEvent motionEvent)
-    {
-        Log.d("Debugging", "In onTouchEvent");
-
-        // Has the player removed their finger from the screen?
-        if ((motionEvent.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_UP) {
-            // Process the player's shot by passing the
-            // coordinates of the player's finger to takeShot
-            takeShot(motionEvent.getX(), motionEvent.getY());
-        }
-
-        return true;
     }
 
     /*
@@ -189,7 +212,7 @@ public class SubHunterGame
 
         // Use Pythagoras's theorem to get the distance travelled in a straight line
         distanceFromSub = (int) Math.sqrt(
-                ((horizontalGap * horizontalGap) + (verticalGap * verticalGap))
+            ((horizontalGap * horizontalGap) + (verticalGap * verticalGap))
         );
 
         if (hit) {
@@ -206,7 +229,7 @@ public class SubHunterGame
     // This code says "BOOM!"
     private void boom()
     {
-        gameView.setImageBitmap(blankBitmap);
+        setImageBitmap(blankBitmap);
 
         // Wipe the screen with a red color
         canvas.drawColor(Color.argb(255, 255, 0, 0));
@@ -230,8 +253,8 @@ public class SubHunterGame
     {
         Map<String, Object> debugData = new LinkedHashMap<>();
 
-        debugData.put("numberHorizontalPixels", size.x);
-        debugData.put("numberVerticalPixels", size.y);
+        debugData.put("numberHorizontalPixels", screenWidth);
+        debugData.put("numberVerticalPixels", screenHeight);
         debugData.put("blockSize", grid.getBlockSize());
         debugData.put("gridWidth", grid.getWidth());
         debugData.put("gridHeight", grid.getHeight());
@@ -241,17 +264,17 @@ public class SubHunterGame
         debugData.put("subVerticalPosition", sub.getVerticalPosition());
         debugData.put("hit", hit);
         debugData.put("shotsTaken", shotsTaken);
-        debugData.put("debugging", debugging);
+        debugData.put("debugging", DEBUGGING);
 
         paint.setTextSize(grid.getBlockSize());
 
         int i = 3;
         for (Map.Entry<String, Object> entry : debugData.entrySet()) {
             canvas.drawText(
-                    entry.getKey() + " = " + entry.getValue(),
-                    50,
-                    grid.getBlockSize() * i,
-                    paint
+                entry.getKey() + " = " + entry.getValue(),
+                50,
+                grid.getBlockSize() * i,
+                paint
             );
             ++i;
         }
