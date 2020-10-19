@@ -27,6 +27,7 @@ public class SubHunterGame extends AppCompatImageView
     private float horizontalTouched = -100;
     private float verticalTouched = -100;
     private boolean hit = false;
+    private int bestGameShotsTaken;
     private int shotsTaken;
     private int distanceFromSub;
 
@@ -115,6 +116,10 @@ public class SubHunterGame extends AppCompatImageView
     {
         Random random = new Random();
         sub = new Submarine(random.nextInt(grid.getWidth()), random.nextInt(grid.getHeight()));
+
+        if (bestGameShotsTaken == 0 || shotsTaken < bestGameShotsTaken) {
+            bestGameShotsTaken = shotsTaken;
+        }
         shotsTaken = 0;
 
         Log.d("Debugging", "In newGame");
@@ -175,12 +180,14 @@ public class SubHunterGame extends AppCompatImageView
     {
         // Re-size the text appropriate for the
         // score and distance text
-        paint.setTextSize(grid.getBlockSize() * 2);
+        paint.setTextSize(grid.getBlockSize() * 1.2f);
         paint.setColor(Color.argb(255, 0, 0, 255));
         canvas.drawText(
-            "Shots Taken: " + shotsTaken + "  Distance: " + distanceFromSub,
+            "Shots Taken: " + shotsTaken +
+                "  Distance: " + distanceFromSub +
+                "  Best Game Shots: " + bestGameShotsTaken,
             grid.getBlockSize(),
-            grid.getBlockSize() * 1.75f,
+            grid.getBlockSize() * 2,
             paint
         );
     }
